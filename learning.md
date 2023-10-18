@@ -167,3 +167,41 @@ console.log(test.b)
 ![[Pasted image 20231018233916.png]]![[Pasted image 20231018233924.png]]
 
 > 楼上这些彼此相连的`prototype`，就组成了一个原型链。 注： 几乎所有 JavaScript 中的对象都是位于原型链顶端的 Object 的实例，除了`Object.prototype`（当然，如果我们手动用`Object.create(null)`创建一个没有任何原型的对象，那它也不是 Object 的实例）。
+
+```typescript
+/**
+
+思路 : 深拷贝考虑的是引用类型，因此先做类型判断，把值类型和函数类型以及 null 直接返回
+
+*/
+
+const deepClone = <T>(source: T) => {
+
+const isArray = Array.isArray(source) // 判断是否为数组
+
+if (source === null || typeof source === 'function' || typeof source !== 'object') return source // 把 null undefined 值类型 函数类型直接返回
+
+const output: any = isArray ? [] : {} // 判断是数组还是对象
+
+for (const key in source) {
+
+if (Object.prototype.hasOwnProperty.call(source, key)) {
+
+output[key] = deepClone(source[key])
+
+}
+
+}
+
+return output
+
+}
+
+  
+
+const a = undefined
+
+const b = deepClone(a)
+
+console.log(typeof undefined !== 'object') //false
+```
