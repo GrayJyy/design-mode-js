@@ -1,19 +1,20 @@
-/**
-思路 : 深拷贝考虑的是引用类型，因此先做类型判断，把值类型和函数类型以及 null 直接返回
-
- */
-const deepClone = <T>(source: T) => {
-  const isArray = Array.isArray(source) // 判断是否为数组
-  if (source === null || typeof source === 'function' || typeof source !== 'object') return source // 把 null undefined 值类型 函数类型直接返回
-  const output: any = isArray ? [] : {} // 判断是数组还是对象
-  for (const key in source) {
-    if (Object.prototype.hasOwnProperty.call(source, key)) {
-      output[key] = deepClone(source[key])
+function deepClone<T>(obj: T, hash = new WeakMap()) {
+  if (obj === null || obj === undefined) return obj // 如果是null或者undefined我就不进行拷贝操作
+  if (obj instanceof Date) return new Date(obj)
+  if (obj instanceof RegExp) return new RegExp(obj)
+  if (typeof obj !== 'object') return obj // 可能是对象或者普通的值  如果是函数的话是不需要深拷贝
+  // 是对象的话就要进行深拷贝
+  if (hash.get(obj)) return hash.get(obj)
+  const cloneObj = Object.create(Object.getPrototypeOf(obj))
+  hash.set(obj, cloneObj)
+  for (let key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      cloneObj[key] = deepClone(obj[key], hash) // 实现一个递归拷贝
     }
   }
-  return output
+  return cloneObj
 }
 
-const a = undefined
+const a = { a: 1 }
 const b = deepClone(a)
-console.log(typeof undefined !== 'object') //false
+console.log(a === b) // false

@@ -164,9 +164,8 @@ console.log(test.b)
 
 >在 JavaScript 中，每个构造函数都拥有一个`prototype`属性，它指向构造函数的原型对象，这个原型对象中有一个 constructor 属性指回构造函数；每个实例都有一个`__proto__`属性，当我们使用构造函数去创建实例时，实例的`__proto__`属性就会指向构造函数的原型对象。
 
-![[Pasted image 20231018233916.png]]![[Pasted image 20231018233924.png]]
 
-> 楼上这些彼此相连的`prototype`，就组成了一个原型链。 注： 几乎所有 JavaScript 中的对象都是位于原型链顶端的 Object 的实例，除了`Object.prototype`（当然，如果我们手动用`Object.create(null)`创建一个没有任何原型的对象，那它也不是 Object 的实例）。
+> 这些彼此相连的`prototype`，就组成了一个原型链。 注： 几乎所有 JavaScript 中的对象都是位于原型链顶端的 Object 的实例，除了`Object.prototype`（当然，如果我们手动用`Object.create(null)`创建一个没有任何原型的对象，那它也不是 Object 的实例）。
 
 ```typescript
 /**
@@ -204,4 +203,45 @@ const a = undefined
 const b = deepClone(a)
 
 console.log(typeof undefined !== 'object') //false
+
+//.  解决循环引用版本
+function deepClone<T>(obj: T, hash = new WeakMap()) {
+
+if (obj === null || obj === undefined) return obj // 如果是null或者undefined我就不进行拷贝操作
+
+if (obj instanceof Date) return new Date(obj)
+
+if (obj instanceof RegExp) return new RegExp(obj)
+
+if (typeof obj !== 'object') return obj // 可能是对象或者普通的值 如果是函数的话是不需要深拷贝
+
+// 是对象的话就要进行深拷贝
+
+if (hash.get(obj)) return hash.get(obj)
+
+const cloneObj = Object.create(Object.getPrototypeOf(obj))
+
+hash.set(obj, cloneObj)
+
+for (let key in obj) {
+
+if (obj.hasOwnProperty(key)) {
+
+cloneObj[key] = deepClone(obj[key], hash) // 实现一个递归拷贝
+
+}
+
+}
+
+return cloneObj
+
+}
+
+  
+
+const a = { a: 1 }
+
+const b = deepClone(a)
+
+console.log(a === b) // false
 ```
